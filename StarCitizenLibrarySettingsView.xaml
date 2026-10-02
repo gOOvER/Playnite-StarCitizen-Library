@@ -1,14 +1,28 @@
-﻿<UserControl x:Class="StarCitizenLibrary.StarCitizenLibrarySettingsView"
+<UserControl x:Class="StarCitizenLibrary.StarCitizenLibrarySettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600">
-    <StackPanel>
-        <TextBlock Text="Description for Option1:"/>
-        <TextBox Text="{Binding Settings.Option1}"/>
-        <TextBlock Text="Description for Option2:"/>
-        <CheckBox IsChecked="{Binding Settings.Option2}"/>
+    <StackPanel Margin="20">
+        <TextBlock Text="Roberts Space Industries / Star Citizen Library" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+        
+        <TextBlock Text="Installationsverzeichnis (optional):" FontWeight="SemiBold" Margin="0,5,0,2"/>
+        <TextBlock Text="Standardmäßig werden alle lokalen Laufwerke automatisch nach Star Citizen durchsucht." 
+                   Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,5"/>
+        <DockPanel LastChildFill="True" Margin="0,0,0,15">
+            <Button Content="Durchsuchen..." DockPanel.Dock="Right" Margin="8,0,0,0" Padding="12,4" Click="BrowseFolder_Click"/>
+            <TextBox Text="{Binding Settings.CustomInstallPath, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Padding="4,2"/>
+        </DockPanel>
+
+        <TextBlock Text="Start-Optionen:" FontWeight="SemiBold" Margin="0,5,0,5"/>
+        <CheckBox Content="Über den offiziellen RSI Launcher starten (statt Direktstart)" 
+                  IsChecked="{Binding Settings.LaunchViaLauncher}" Margin="0,0,0,15"/>
+
+        <TextBlock Text="Channels importieren:" FontWeight="SemiBold" Margin="0,5,0,5"/>
+        <CheckBox Content="PTU (Public Test Universe) importieren" IsChecked="{Binding Settings.ImportPtu}" Margin="0,0,0,5"/>
+        <CheckBox Content="EPTU (Experimental PTU) importieren" IsChecked="{Binding Settings.ImportEptu}" Margin="0,0,0,5"/>
+        <CheckBox Content="Tech-Preview importieren" IsChecked="{Binding Settings.ImportTechPreview}" Margin="0,0,0,5"/>
     </StackPanel>
 </UserControl>
