@@ -62,7 +62,7 @@ namespace StarCitizenLibrary
 
                 yield return new AutomaticPlayController(args.Game)
                 {
-                    Name = "Tracking",
+                    Name = "Normal starten",
                     Path = launcherPath,
                     WorkingDir = gameRoot,
                     TrackingMode = TrackingMode.Directory,
@@ -100,6 +100,112 @@ namespace StarCitizenLibrary
                     ? install.LauncherExePath
                     : install.ExecutablePath;
 
+                var screenshotsDir = Path.Combine(install.InstallDirectory, "ScreenShots");
+                var logbackupsDir = Path.Combine(install.InstallDirectory, "logbackups");
+                var gameLogFile = Path.Combine(install.InstallDirectory, "Game.log");
+                var userCfgFile = Path.Combine(install.InstallDirectory, "user.cfg");
+
+                var tags = new HashSet<MetadataProperty>
+                {
+                    new MetadataNameProperty("Space Sim"),
+                    new MetadataNameProperty("Persistent Universe"),
+                    new MetadataNameProperty(string.Format("Channel: {0}", install.Channel))
+                };
+
+                string pilotLine = "";
+                if (install.Pilot != null && !string.IsNullOrEmpty(install.Pilot.Name))
+                {
+                    tags.Add(new MetadataNameProperty("Pilot: " + install.Pilot.Name));
+                    if (!string.IsNullOrEmpty(install.Pilot.AccountId))
+                    {
+                        tags.Add(new MetadataNameProperty("RSI Account: " + install.Pilot.AccountId));
+                    }
+                    pilotLine = "<tr><td><b>Pilot:</b></td><td>" + install.Pilot.Name + " (ID: " + (install.Pilot.AccountId ?? "Unbekannt") + ")</td></tr>";
+                }
+
+                string shardLine = "";
+                if (install.Pilot != null && !string.IsNullOrEmpty(install.Pilot.LastShard))
+                {
+                    shardLine = "<tr><td><b>Letzte Shard:</b></td><td>" + install.Pilot.LastShard + "</td></tr>";
+                }
+
+                var sizeGbStr = install.InstallSize.HasValue ? string.Format("{0:F2} GB", install.InstallSize.Value / (1024.0 * 1024.0 * 1024.0)) : "Unbekannt";
+
+                var descriptionHtml = "<p><b>Star Citizen</b> ist eine Weltraum-Handels- und Kampfflugsimulation von Cloud Imperium Games.</p>" +
+                    "<table style='border-collapse: collapse; margin-top: 8px; font-size: 13px;'>" +
+                    pilotLine +
+                    "<tr><td><b>Version:</b></td><td>" + (install.Version ?? "Alpha") + " (" + (install.RawVersion ?? "") + ")</td></tr>" +
+                    "<tr><td><b>Kanal:</b></td><td>" + install.Channel + "</td></tr>" +
+                    "<tr><td><b>SSD-Größe:</b></td><td>" + sizeGbStr + "</td></tr>" +
+                    shardLine +
+                    "<tr><td><b>Pfad:</b></td><td>" + install.InstallDirectory + "</td></tr>" +
+                    "</table>";
+
+                var actions = new List<GameAction>
+                {
+                    new GameAction
+                    {
+                        Name = "Normal starten",
+                        Type = GameActionType.File,
+                        Path = launcherPath,
+                        WorkingDir = gameRoot,
+                        TrackingMode = TrackingMode.Directory,
+                        TrackingPath = bin64Dir,
+                        InitialTrackingDelay = 0,
+                        TrackingFrequency = 2000,
+                        IsPlayAction = true
+                    }
+                };
+
+                // Schnellzugriff-Aktionen für Ordner und Dateien
+                if (Directory.Exists(screenshotsDir))
+                {
+                    actions.Add(new GameAction
+                    {
+                        Name = "📸 Screenshots-Ordner öffnen",
+                        Type = GameActionType.File,
+                        Path = "explorer.exe",
+                        Arguments = string.Format("{0}", screenshotsDir),
+                        IsPlayAction = false
+                    });
+                }
+
+                if (Directory.Exists(logbackupsDir))
+                {
+                    actions.Add(new GameAction
+                    {
+                        Name = "📂 Log-Backups öffnen",
+                        Type = GameActionType.File,
+                        Path = "explorer.exe",
+                        Arguments = string.Format("{0}", logbackupsDir),
+                        IsPlayAction = false
+                    });
+                }
+
+                if (File.Exists(gameLogFile))
+                {
+                    actions.Add(new GameAction
+                    {
+                        Name = "📜 Game.log ansehen",
+                        Type = GameActionType.File,
+                        Path = "notepad.exe",
+                        Arguments = string.Format("{0}", gameLogFile),
+                        IsPlayAction = false
+                    });
+                }
+
+                if (File.Exists(userCfgFile))
+                {
+                    actions.Add(new GameAction
+                    {
+                        Name = "⚙️ user.cfg bearbeiten",
+                        Type = GameActionType.File,
+                        Path = "notepad.exe",
+                        Arguments = string.Format("{0}", userCfgFile),
+                        IsPlayAction = false
+                    });
+                }
+
                 var game = new GameMetadata
                 {
                     GameId = gameId,
@@ -122,7 +228,8 @@ namespace StarCitizenLibrary
                         new MetadataNameProperty("Multiplayer"),
                         new MetadataNameProperty("Co-op")
                     },
-                    Description = "Star Citizen is an in-development multiplayer space trading and combat simulation game developed and published by Cloud Imperium Games.",
+                    Tags = tags,
+                    Description = descriptionHtml,
                     Links = new List<Link>
                     {
                         new Link("Official Website", "https://robertsspaceindustries.com/"),
@@ -132,21 +239,7 @@ namespace StarCitizenLibrary
                         new Link("Erkul Ship Loadout", "https://www.erkul.games/live/calculator"),
                         new Link("SC-Trade Tools", "https://sc-trade.tools/")
                     },
-                    GameActions = new List<GameAction>
-                    {
-                        new GameAction
-                        {
-                            Name = "Tracking",
-                            Type = GameActionType.File,
-                            Path = launcherPath,
-                            WorkingDir = gameRoot,
-                            TrackingMode = TrackingMode.Directory,
-                            TrackingPath = bin64Dir,
-                            InitialTrackingDelay = 0,
-                            TrackingFrequency = 2000,
-                            IsPlayAction = true
-                        }
-                    }
+                    GameActions = actions
                 };
 
                 // Wenn ein manueller Eintrag existiert, Spielzeit & Statistiken für den Hauptchannel (LIVE) automatisch übernehmen

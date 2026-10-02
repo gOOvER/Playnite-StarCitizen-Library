@@ -8,6 +8,13 @@ using Playnite.SDK;
 
 namespace StarCitizenLibrary
 {
+    public class PilotInfo
+    {
+        public string Name { get; set; }
+        public string AccountId { get; set; }
+        public string LastShard { get; set; }
+    }
+
     public class StarCitizenInstallation
     {
         public string Channel { get; set; }
@@ -20,6 +27,7 @@ namespace StarCitizenLibrary
         public string Branch { get; set; }
         public string BuildId { get; set; }
         public ulong? InstallSize { get; set; }
+        public PilotInfo Pilot { get; set; }
         public bool IsInstalled => Directory.Exists(InstallDirectory) && (File.Exists(ExecutablePath) || File.Exists(LauncherExePath));
     }
 
@@ -91,6 +99,93 @@ namespace StarCitizenLibrary
             }
         }
 
+        public static PilotInfo ReadPilotInfo(string channelDir)
+        {
+            // 1. Aus temporärer loginData.json prüfen
+            var loginData = Path.Combine(channelDir, "loginData.json");
+            if (File.Exists(loginData))
+            {
+                try
+                {
+                    var text = File.ReadAllText(loginData);
+                    var displayMatch = Regex.Match(text, "displayname\"\\s*:\\s*\"([^\"]+)\"");
+                    var nickMatch = Regex.Match(text, "nickname\"\\s*:\\s*\"([^\"]+)\"");
+                    var accountMatch = Regex.Match(text, "account_id\"\\s*:\\s*\"([^\"]+)\"");
+                    var shardMatch = Regex.Match(text, "pub-sc-[^\"]+");
+
+                    var name = displayMatch.Success ? displayMatch.Groups[1].Value : (nickMatch.Success ? nickMatch.Groups[1].Value : null);
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        return new PilotInfo
+                        {
+                            Name = name,
+                            AccountId = accountMatch.Success ? accountMatch.Groups[1].Value : null,
+                            LastShard = shardMatch.Success ? shardMatch.Value : null
+                        };
+                    }
+                }
+                catch { }
+            }
+
+            // 2. Aus Game.log auslesen
+            var gameLog = Path.Combine(channelDir, "Game.log");
+            if (File.Exists(gameLog))
+            {
+                try
+                {
+                    using (var fs = new FileStream(gameLog, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var reader = new StreamReader(fs))
+                    {
+                        string pilotName = null;
+                        string accountId = null;
+                        string lastShard = null;
+                        int lines = 0;
+
+                        while (!reader.EndOfStream && lines < 600)
+                        {
+                            var line = reader.ReadLine();
+                            lines++;
+                            if (line == null) continue;
+
+                            if (pilotName == null && line.Contains("AccountLoginCharacterStatus_Character"))
+                            {
+                                var m = Regex.Match(line, "accountId\\s+(\\d+)\\s+-\\s+name\\s+([^\\s\\-]+)");
+                                if (m.Success)
+                                {
+                                    accountId = m.Groups[1].Value;
+                                    pilotName = m.Groups[2].Value;
+                                }
+                            }
+
+                            if (lastShard == null && line.Contains("@env_session:"))
+                            {
+                                var m = Regex.Match(line, "@env_session:\\s*'([^']+)'");
+                                if (m.Success)
+                                {
+                                    lastShard = m.Groups[1].Value;
+                                }
+                            }
+
+                            if (pilotName != null && lastShard != null) break;
+                        }
+
+                        if (!string.IsNullOrEmpty(pilotName))
+                        {
+                            return new PilotInfo
+                            {
+                                Name = pilotName,
+                                AccountId = accountId,
+                                LastShard = lastShard
+                            };
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            return null;
+        }
+
         public static IEnumerable<StarCitizenInstallation> DetectInstallations(
             string customPath = null,
             bool includePtu = true,
@@ -145,6 +240,7 @@ namespace StarCitizenLibrary
                     var chosenExe = File.Exists(launcherExe) ? launcherExe : exePath;
                     var versionInfo = ReadVersion(channelDir, exePath);
                     var installSize = CalculateDirectorySize(channelDir);
+                    var pilot = ReadPilotInfo(channelDir);
 
                     installations.Add(new StarCitizenInstallation
                     {
@@ -157,7 +253,8 @@ namespace StarCitizenLibrary
                         RawVersion = versionInfo.RawVersion,
                         Branch = versionInfo.Branch,
                         BuildId = versionInfo.BuildId,
-                        InstallSize = installSize
+                        InstallSize = installSize,
+                        Pilot = pilot
                     });
                 }
             }
@@ -186,15 +283,14 @@ namespace StarCitizenLibrary
                 try
                 {
                     var text = File.ReadAllText(manifestPath);
-                    var versionMatch = Regex.Match(text, "\"Version\"\\s*:\\s*\"([^\"]+)\"");
-                    var branchMatch = Regex.Match(text, "\"Branch\"\\s*:\\s*\"([^\"]+)\"");
-                    var buildIdMatch = Regex.Match(text, "\"BuildId\"\\s*:\\s*\"([^\"]+)\"");
+                    var versionMatch = Regex.Match(text, "Version\"\\s*:\\s*\"([^\"]+)\"");
+                    var branchMatch = Regex.Match(text, "Branch\"\\s*:\\s*\"([^\"]+)\"");
+                    var buildIdMatch = Regex.Match(text, "BuildId\"\\s*:\\s*\"([^\"]+)\"");
 
                     var rawVersion = versionMatch.Success ? versionMatch.Groups[1].Value : null;
                     var branch = branchMatch.Success ? branchMatch.Groups[1].Value : null;
                     var buildId = buildIdMatch.Success ? buildIdMatch.Groups[1].Value : null;
 
-                    // Exakte semantische Version wie "4.10.0" oder "4.10.1" aus Branch (z. B. "sc-alpha-4.10.0") extrahieren
                     string displayVersion = null;
                     if (!string.IsNullOrEmpty(branch))
                     {
