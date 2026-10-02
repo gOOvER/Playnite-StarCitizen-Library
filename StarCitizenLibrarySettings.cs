@@ -7,7 +7,6 @@ namespace StarCitizenLibrary
     public class StarCitizenLibrarySettings : ObservableObject
     {
         private string customInstallPath = string.Empty;
-        private bool launchViaLauncher = false;
         private bool importPtu = true;
         private bool importEptu = true;
         private bool importTechPreview = true;
@@ -16,12 +15,6 @@ namespace StarCitizenLibrary
         {
             get => customInstallPath;
             set => SetValue(ref customInstallPath, value);
-        }
-
-        public bool LaunchViaLauncher
-        {
-            get => launchViaLauncher;
-            set => SetValue(ref launchViaLauncher, value);
         }
 
         public bool ImportPtu

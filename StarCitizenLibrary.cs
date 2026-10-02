@@ -61,7 +61,7 @@ namespace StarCitizenLibrary
 
                 yield return new AutomaticPlayController(args.Game)
                 {
-                    Name = "Play Star Citizen",
+                    Name = "Tracking",
                     Path = launcherPath,
                     WorkingDir = gameRoot,
                     TrackingMode = TrackingMode.Directory,

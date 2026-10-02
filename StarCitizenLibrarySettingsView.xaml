@@ -16,9 +16,9 @@
             <TextBox Text="{Binding Settings.CustomInstallPath, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Padding="4,2"/>
         </DockPanel>
 
-        <TextBlock Text="Start-Optionen:" FontWeight="SemiBold" Margin="0,5,0,5"/>
-        <CheckBox Content="Über den offiziellen RSI Launcher starten (statt Direktstart)" 
-                  IsChecked="{Binding Settings.LaunchViaLauncher}" Margin="0,0,0,15"/>
+        <TextBlock Text="Start-Verhalten:" FontWeight="SemiBold" Margin="0,5,0,2"/>
+        <TextBlock Text="Das Spiel wird immer über den offiziellen RSI Launcher gestartet (erforderlich für EAC- &amp; Auth-Token) und der Prozess im Ordner Bin64 überwacht." 
+                   Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
         <TextBlock Text="Channels importieren:" FontWeight="SemiBold" Margin="0,5,0,5"/>
         <CheckBox Content="PTU (Public Test Universe) importieren" IsChecked="{Binding Settings.ImportPtu}" Margin="0,0,0,5"/>
