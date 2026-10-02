@@ -194,17 +194,7 @@ namespace StarCitizenLibrary
                     });
                 }
 
-                if (File.Exists(userCfgFile))
-                {
-                    actions.Add(new GameAction
-                    {
-                        Name = "⚙️ user.cfg bearbeiten",
-                        Type = GameActionType.File,
-                        Path = "notepad.exe",
-                        Arguments = string.Format("{0}", userCfgFile),
-                        IsPlayAction = false
-                    });
-                }
+
 
                 var game = new GameMetadata
                 {
