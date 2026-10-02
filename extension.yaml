@@ -1,0 +1,10 @@
+Id: StarCitizenLibrary_d2146b15-4cfc-40cc-93dd-1297e2e0aa49
+Name: Roberts Space Industries
+Author: gOOvER
+Version: 0.1.0
+Module: StarCitizenLibrary.dll
+Type: GameLibrary
+Icon: icon.png
+Links:
+  - Name: GitHub
+    Url: https://github.com/gOOvER/Playnite-StarCitizen-Library
