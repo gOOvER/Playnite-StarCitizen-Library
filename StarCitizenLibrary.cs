@@ -4,6 +4,7 @@ using Playnite.SDK.Plugins;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Controls;
 
@@ -36,6 +37,40 @@ namespace StarCitizenLibrary
         public string GetPluginFolder()
         {
             return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        }
+
+        public override IEnumerable<PlayController> GetPlayActions(GetPlayActionsArgs args)
+        {
+            var installations = StarCitizenDetector.DetectInstallations(
+                settings.Settings.CustomInstallPath,
+                settings.Settings.ImportPtu,
+                settings.Settings.ImportEptu,
+                settings.Settings.ImportTechPreview
+            );
+
+            var install = installations.FirstOrDefault(i =>
+                string.Equals($"RSI_SC_{i.Channel}", args.Game.GameId, StringComparison.OrdinalIgnoreCase));
+
+            if (install != null)
+            {
+                var gameExe = Path.Combine(install.InstallDirectory, "Bin64", "StarCitizen.exe");
+                var launcherExe = install.LauncherExePath;
+                var useLauncher = settings.Settings.LaunchViaLauncher && !string.IsNullOrEmpty(launcherExe) && File.Exists(launcherExe);
+
+                var startPath = useLauncher ? launcherExe : install.ExecutablePath;
+                var workingDir = useLauncher ? Path.GetDirectoryName(launcherExe) : install.InstallDirectory;
+
+                yield return new AutomaticPlayController(args.Game)
+                {
+                    Name = useLauncher ? "Play via RSI Launcher" : "Play Star Citizen",
+                    Path = startPath,
+                    WorkingDir = workingDir,
+                    TrackingMode = TrackingMode.Process,
+                    TrackingPath = gameExe,
+                    InitialTrackingDelay = 2000,
+                    TrackingFrequency = 2000
+                };
+            }
         }
 
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
@@ -82,52 +117,8 @@ namespace StarCitizenLibrary
                         new Link("Comm-Link", "https://robertsspaceindustries.com/comm-link"),
                         new Link("Issue Council", "https://issue-council.robertsspaceindustries.com/"),
                         new Link("Erkul Ship Loadout", "https://www.erkul.games/live/calculator")
-                    },
-                    GameActions = new List<GameAction>()
-                };
-
-                // Primary Play Action
-                if (settings.Settings.LaunchViaLauncher && !string.IsNullOrEmpty(install.LauncherExePath) && File.Exists(install.LauncherExePath))
-                {
-                    game.GameActions.Add(new GameAction
-                    {
-                        Name = "Play via RSI Launcher",
-                        Type = GameActionType.File,
-                        Path = install.LauncherExePath,
-                        IsPlayAction = true
-                    });
-
-                    game.GameActions.Add(new GameAction
-                    {
-                        Name = "Direct Launch (EAC)",
-                        Type = GameActionType.File,
-                        Path = install.ExecutablePath,
-                        WorkingDir = install.InstallDirectory,
-                        IsPlayAction = false
-                    });
-                }
-                else
-                {
-                    game.GameActions.Add(new GameAction
-                    {
-                        Name = "Play Star Citizen",
-                        Type = GameActionType.File,
-                        Path = install.ExecutablePath,
-                        WorkingDir = install.InstallDirectory,
-                        IsPlayAction = true
-                    });
-
-                    if (!string.IsNullOrEmpty(install.LauncherExePath) && File.Exists(install.LauncherExePath))
-                    {
-                        game.GameActions.Add(new GameAction
-                        {
-                            Name = "Open RSI Launcher",
-                            Type = GameActionType.File,
-                            Path = install.LauncherExePath,
-                            IsPlayAction = false
-                        });
                     }
-                }
+                };
 
                 // Default Artworks (Icons & Images)
                 var iconPath = Path.Combine(pluginFolder, "icon.png");
