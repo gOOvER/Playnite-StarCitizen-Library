@@ -53,21 +53,20 @@ namespace StarCitizenLibrary
 
             if (install != null)
             {
-                var gameExe = Path.Combine(install.InstallDirectory, "Bin64", "StarCitizen.exe");
-                var launcherExe = install.LauncherExePath;
-                var useLauncher = settings.Settings.LaunchViaLauncher && !string.IsNullOrEmpty(launcherExe) && File.Exists(launcherExe);
-
-                var startPath = useLauncher ? launcherExe : install.ExecutablePath;
-                var workingDir = useLauncher ? Path.GetDirectoryName(launcherExe) : install.InstallDirectory;
+                var bin64Dir = Path.Combine(install.InstallDirectory, "Bin64");
+                var gameRoot = Path.GetDirectoryName(install.InstallDirectory) ?? install.InstallDirectory;
+                var launcherPath = !string.IsNullOrEmpty(install.LauncherExePath) && File.Exists(install.LauncherExePath)
+                    ? install.LauncherExePath
+                    : install.ExecutablePath;
 
                 yield return new AutomaticPlayController(args.Game)
                 {
-                    Name = useLauncher ? "Play via RSI Launcher" : "Play Star Citizen",
-                    Path = startPath,
-                    WorkingDir = workingDir,
-                    TrackingMode = TrackingMode.Process,
-                    TrackingPath = gameExe,
-                    InitialTrackingDelay = 2000,
+                    Name = "Play Star Citizen",
+                    Path = launcherPath,
+                    WorkingDir = gameRoot,
+                    TrackingMode = TrackingMode.Directory,
+                    TrackingPath = bin64Dir,
+                    InitialTrackingDelay = 0,
                     TrackingFrequency = 2000
                 };
             }
@@ -88,6 +87,12 @@ namespace StarCitizenLibrary
             foreach (var install in installations)
             {
                 var gameId = $"RSI_SC_{install.Channel}";
+                var bin64Dir = Path.Combine(install.InstallDirectory, "Bin64");
+                var gameRoot = Path.GetDirectoryName(install.InstallDirectory) ?? install.InstallDirectory;
+                var launcherPath = !string.IsNullOrEmpty(install.LauncherExePath) && File.Exists(install.LauncherExePath)
+                    ? install.LauncherExePath
+                    : install.ExecutablePath;
+
                 var game = new GameMetadata
                 {
                     GameId = gameId,
@@ -117,6 +122,21 @@ namespace StarCitizenLibrary
                         new Link("Comm-Link", "https://robertsspaceindustries.com/comm-link"),
                         new Link("Issue Council", "https://issue-council.robertsspaceindustries.com/"),
                         new Link("Erkul Ship Loadout", "https://www.erkul.games/live/calculator")
+                    },
+                    GameActions = new List<GameAction>
+                    {
+                        new GameAction
+                        {
+                            Name = "Tracking",
+                            Type = GameActionType.File,
+                            Path = launcherPath,
+                            WorkingDir = gameRoot,
+                            TrackingMode = TrackingMode.Directory,
+                            TrackingPath = bin64Dir,
+                            InitialTrackingDelay = 0,
+                            TrackingFrequency = 2000,
+                            IsPlayAction = true
+                        }
                     }
                 };
 
