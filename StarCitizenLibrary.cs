@@ -1,4 +1,5 @@
 using Playnite.SDK;
+using Playnite.SDK.Events;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using System;
@@ -84,6 +85,12 @@ namespace StarCitizenLibrary
                 settings.Settings.ImportTechPreview
             );
 
+            // Prüfen, ob bereits ein manueller Star Citizen Eintrag mit Spielzeit/Notizen in Playnite existiert
+            var manualGame = PlayniteApi.Database.Games.FirstOrDefault(g =>
+                g.PluginId == Guid.Empty &&
+                !string.IsNullOrEmpty(g.Name) &&
+                g.Name.IndexOf("Star Citizen", StringComparison.OrdinalIgnoreCase) >= 0);
+
             foreach (var install in installations)
             {
                 var gameId = $"RSI_SC_{install.Channel}";
@@ -140,21 +147,71 @@ namespace StarCitizenLibrary
                     }
                 };
 
-                // Default Artworks (Icons & Images)
-                var iconPath = Path.Combine(pluginFolder, "icon.png");
-                if (File.Exists(iconPath))
+                // Wenn ein manueller Eintrag existiert, Spielzeit & Statistiken für den Hauptchannel (LIVE) automatisch übernehmen
+                if (manualGame != null && install.Channel.Equals("LIVE", StringComparison.OrdinalIgnoreCase))
                 {
-                    game.Icon = new MetadataFile(iconPath);
+                    if (manualGame.Playtime > 0) game.Playtime = manualGame.Playtime;
+                    if (manualGame.PlayCount > 0) game.PlayCount = manualGame.PlayCount;
+                    if (manualGame.LastActivity.HasValue) game.LastActivity = manualGame.LastActivity;
+                    game.Favorite = manualGame.Favorite;
+                    if (manualGame.UserScore.HasValue) game.UserScore = manualGame.UserScore;
+                    if (!string.IsNullOrWhiteSpace(manualGame.Notes)) 
+                    // Falls der Nutzer bereits eigene Bilder gewählt hatte, diese übernehmen
+                    if (!string.IsNullOrEmpty(manualGame.CoverImage)) game.CoverImage = new MetadataFile(manualGame.CoverImage);
+                    if (!string.IsNullOrEmpty(manualGame.BackgroundImage)) game.BackgroundImage = new MetadataFile(manualGame.BackgroundImage);
+                    if (!string.IsNullOrEmpty(manualGame.Icon)) game.Icon = new MetadataFile(manualGame.Icon);
                 }
 
-                // Official high-res promotional artwork from RSI CDN
-                game.CoverImage = new MetadataFile("https://media.robertsspaceindustries.com/o2x5s5x7omj1g/source.jpg");
-                game.BackgroundImage = new MetadataFile("https://media.robertsspaceindustries.com/y4pve9y7y9p3y/source.jpg");
+                // Standard-Artworks falls keine manuellen vorhanden
+                if (game.Icon == null)
+                {
+                    var iconPath = Path.Combine(pluginFolder, "icon.png");
+                    if (File.Exists(iconPath)) game.Icon = new MetadataFile(iconPath);
+                }
+
+                if (game.CoverImage == null)
+                {
+                    game.CoverImage = new MetadataFile("https://media.robertsspaceindustries.com/o2x5s5x7omj1g/source.jpg");
+                }
+
+                if (game.BackgroundImage == null)
+                {
+                    game.BackgroundImage = new MetadataFile("https://media.robertsspaceindustries.com/y4pve9y7y9p3y/source.jpg");
+                }
 
                 games.Add(game);
             }
 
             return games;
+        }
+
+        public override void OnLibraryUpdated(OnLibraryUpdatedEventArgs args)
+        {
+            try
+            {
+                // Nach dem Bibliotheks-Update: Prüfen ob ein manueller Eintrag existiert und die Spielzeit übertragen
+                var libraryLiveGame = PlayniteApi.Database.Games.FirstOrDefault(g => g.PluginId == Id && g.GameId.Equals("RSI_SC_LIVE", StringComparison.OrdinalIgnoreCase));
+                var manualGame = PlayniteApi.Database.Games.FirstOrDefault(g =>
+                    g.PluginId == Guid.Empty &&
+                    !string.IsNullOrEmpty(g.Name) &&
+                    g.Name.IndexOf("Star Citizen", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                if (libraryLiveGame != null && manualGame != null && manualGame.Playtime > 0 && libraryLiveGame.Playtime == 0)
+                {
+                    libraryLiveGame.Playtime = manualGame.Playtime;
+                    libraryLiveGame.PlayCount = manualGame.PlayCount;
+                    libraryLiveGame.LastActivity = manualGame.LastActivity;
+                    libraryLiveGame.Favorite = manualGame.Favorite;
+                    if (!string.IsNullOrWhiteSpace(manualGame.Notes)) libraryLiveGame.Notes = manualGame.Notes;
+
+                    PlayniteApi.Database.Games.Update(libraryLiveGame);
+                    logger.Info($"Successfully migrated {manualGame.Playtime} seconds of playtime from manual entry to library entry.");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, "Failed to migrate playtime from manual Star Citizen entry.");
+            }
         }
 
         public override ISettings GetSettings(bool firstRunSettings)
