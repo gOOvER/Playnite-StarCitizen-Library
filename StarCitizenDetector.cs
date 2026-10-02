@@ -16,14 +16,17 @@ namespace StarCitizenLibrary
         public string ExecutablePath { get; set; }
         public string LauncherExePath { get; set; }
         public string Version { get; set; }
+        public string RawVersion { get; set; }
         public string Branch { get; set; }
         public string BuildId { get; set; }
+        public ulong? InstallSize { get; set; }
         public bool IsInstalled => Directory.Exists(InstallDirectory) && (File.Exists(ExecutablePath) || File.Exists(LauncherExePath));
     }
 
     public class VersionInfo
     {
         public string Version { get; set; }
+        public string RawVersion { get; set; }
         public string Branch { get; set; }
         public string BuildId { get; set; }
     }
@@ -65,6 +68,27 @@ namespace StarCitizenLibrary
             }
 
             return null;
+        }
+
+        public static ulong? CalculateDirectorySize(string directoryPath)
+        {
+            try
+            {
+                if (!Directory.Exists(directoryPath)) return null;
+
+                var dirInfo = new DirectoryInfo(directoryPath);
+                ulong totalSize = 0;
+                foreach (var file in dirInfo.EnumerateFiles("*", SearchOption.AllDirectories))
+                {
+                    totalSize += (ulong)file.Length;
+                }
+                return totalSize;
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, string.Format("Failed to calculate directory size for {0}", directoryPath));
+                return null;
+            }
         }
 
         public static IEnumerable<StarCitizenInstallation> DetectInstallations(
@@ -120,6 +144,7 @@ namespace StarCitizenLibrary
 
                     var chosenExe = File.Exists(launcherExe) ? launcherExe : exePath;
                     var versionInfo = ReadVersion(channelDir, exePath);
+                    var installSize = CalculateDirectorySize(channelDir);
 
                     installations.Add(new StarCitizenInstallation
                     {
@@ -129,8 +154,10 @@ namespace StarCitizenLibrary
                         ExecutablePath = chosenExe,
                         LauncherExePath = rsiLauncherPath,
                         Version = versionInfo.Version,
+                        RawVersion = versionInfo.RawVersion,
                         Branch = versionInfo.Branch,
-                        BuildId = versionInfo.BuildId
+                        BuildId = versionInfo.BuildId,
+                        InstallSize = installSize
                     });
                 }
             }
@@ -159,18 +186,34 @@ namespace StarCitizenLibrary
                 try
                 {
                     var text = File.ReadAllText(manifestPath);
-                    var versionMatch = Regex.Match(text, @"[""']Version[""']s*:s*[""']([^""']+)[""']");
-                    var branchMatch = Regex.Match(text, @"[""']Branch[""']s*:s*[""']([^""']+)[""']");
-                    var buildIdMatch = Regex.Match(text, @"[""']BuildId[""']s*:s*[""']([^""']+)[""']");
+                    var versionMatch = Regex.Match(text, "\"Version\"\\s*:\\s*\"([^\"]+)\"");
+                    var branchMatch = Regex.Match(text, "\"Branch\"\\s*:\\s*\"([^\"]+)\"");
+                    var buildIdMatch = Regex.Match(text, "\"BuildId\"\\s*:\\s*\"([^\"]+)\"");
 
-                    var version = versionMatch.Success ? versionMatch.Groups[1].Value : null;
+                    var rawVersion = versionMatch.Success ? versionMatch.Groups[1].Value : null;
                     var branch = branchMatch.Success ? branchMatch.Groups[1].Value : null;
                     var buildId = buildIdMatch.Success ? buildIdMatch.Groups[1].Value : null;
 
-                    if (!string.IsNullOrEmpty(version))
+                    // Exakte semantische Version wie "4.10.0" oder "4.10.1" aus Branch (z. B. "sc-alpha-4.10.0") extrahieren
+                    string displayVersion = null;
+                    if (!string.IsNullOrEmpty(branch))
                     {
-                        return new VersionInfo { Version = version, Branch = branch, BuildId = buildId };
+                        var semMatch = Regex.Match(branch, @"\b\d+\.\d+(?:\.\d+)?\b");
+                        if (semMatch.Success)
+                        {
+                            displayVersion = semMatch.Value;
+                        }
                     }
+
+                    var finalVersion = displayVersion ?? rawVersion ?? "Alpha";
+
+                    return new VersionInfo
+                    {
+                        Version = finalVersion,
+                        RawVersion = rawVersion,
+                        Branch = branch,
+                        BuildId = buildId
+                    };
                 }
                 catch (Exception ex)
                 {
@@ -186,7 +229,13 @@ namespace StarCitizenLibrary
                     var v = vi.ProductVersion ?? vi.FileVersion;
                     if (!string.IsNullOrEmpty(v))
                     {
-                        return new VersionInfo { Version = v.Replace(",", ".").Trim() };
+                        var normalized = v.Replace(",", ".").Trim();
+                        var semMatch = Regex.Match(normalized, @"\b\d+\.\d+(?:\.\d+)?\b");
+                        return new VersionInfo
+                        {
+                            Version = semMatch.Success ? semMatch.Value : normalized,
+                            RawVersion = normalized
+                        };
                     }
                 }
                 catch (Exception ex)
@@ -195,7 +244,7 @@ namespace StarCitizenLibrary
                 }
             }
 
-            return new VersionInfo { Version = "Alpha" };
+            return new VersionInfo { Version = "Alpha", RawVersion = "Alpha" };
         }
     }
 }

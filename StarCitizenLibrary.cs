@@ -50,7 +50,7 @@ namespace StarCitizenLibrary
             );
 
             var install = installations.FirstOrDefault(i =>
-                string.Equals($"RSI_SC_{i.Channel}", args.Game.GameId, StringComparison.OrdinalIgnoreCase));
+                string.Equals(string.Format("RSI_SC_{0}", i.Channel), args.Game.GameId, StringComparison.OrdinalIgnoreCase));
 
             if (install != null)
             {
@@ -93,7 +93,7 @@ namespace StarCitizenLibrary
 
             foreach (var install in installations)
             {
-                var gameId = $"RSI_SC_{install.Channel}";
+                var gameId = string.Format("RSI_SC_{0}", install.Channel);
                 var bin64Dir = Path.Combine(install.InstallDirectory, "Bin64");
                 var gameRoot = Path.GetDirectoryName(install.InstallDirectory) ?? install.InstallDirectory;
                 var launcherPath = !string.IsNullOrEmpty(install.LauncherExePath) && File.Exists(install.LauncherExePath)
@@ -105,6 +105,7 @@ namespace StarCitizenLibrary
                     GameId = gameId,
                     Name = install.ChannelName,
                     InstallDirectory = install.InstallDirectory,
+                    InstallSize = install.InstallSize,
                     IsInstalled = true,
                     Version = install.Version,
                     Platforms = new HashSet<MetadataProperty> { new MetadataSpecProperty("pc_windows") },
@@ -128,7 +129,8 @@ namespace StarCitizenLibrary
                         new Link("Server Status", "https://status.robertsspaceindustries.com/"),
                         new Link("Comm-Link", "https://robertsspaceindustries.com/comm-link"),
                         new Link("Issue Council", "https://issue-council.robertsspaceindustries.com/"),
-                        new Link("Erkul Ship Loadout", "https://www.erkul.games/live/calculator")
+                        new Link("Erkul Ship Loadout", "https://www.erkul.games/live/calculator"),
+                        new Link("SC-Trade Tools", "https://sc-trade.tools/")
                     },
                     GameActions = new List<GameAction>
                     {
@@ -155,7 +157,7 @@ namespace StarCitizenLibrary
                     if (manualGame.LastActivity.HasValue) game.LastActivity = manualGame.LastActivity;
                     game.Favorite = manualGame.Favorite;
                     if (manualGame.UserScore.HasValue) game.UserScore = manualGame.UserScore;
-                    if (!string.IsNullOrWhiteSpace(manualGame.Notes)) 
+
                     // Falls der Nutzer bereits eigene Bilder gewählt hatte, diese übernehmen
                     if (!string.IsNullOrEmpty(manualGame.CoverImage)) game.CoverImage = new MetadataFile(manualGame.CoverImage);
                     if (!string.IsNullOrEmpty(manualGame.BackgroundImage)) game.BackgroundImage = new MetadataFile(manualGame.BackgroundImage);
@@ -189,6 +191,40 @@ namespace StarCitizenLibrary
         {
             try
             {
+                var installations = StarCitizenDetector.DetectInstallations(
+                    settings.Settings.CustomInstallPath,
+                    settings.Settings.ImportPtu,
+                    settings.Settings.ImportEptu,
+                    settings.Settings.ImportTechPreview
+                );
+
+                // Vorhandene Star Citizen Spiele in der Playnite-Datenbank mit neuester Version & SSD-Größe synchronisieren
+                foreach (var install in installations)
+                {
+                    var gameId = string.Format("RSI_SC_{0}", install.Channel);
+                    var dbGame = PlayniteApi.Database.Games.FirstOrDefault(g => g.PluginId == Id && string.Equals(g.GameId, gameId, StringComparison.OrdinalIgnoreCase));
+                    if (dbGame != null)
+                    {
+                        bool modified = false;
+                        if (install.InstallSize.HasValue && dbGame.InstallSize != install.InstallSize.Value)
+                        {
+                            dbGame.InstallSize = install.InstallSize.Value;
+                            modified = true;
+                        }
+                        if (!string.IsNullOrEmpty(install.Version) && dbGame.Version != install.Version)
+                        {
+                            dbGame.Version = install.Version;
+                            modified = true;
+                        }
+
+                        if (modified)
+                        {
+                            PlayniteApi.Database.Games.Update(dbGame);
+                            logger.Info(string.Format("Updated {0}: Version={1}, InstallSize={2}", dbGame.Name, dbGame.Version, dbGame.InstallSize));
+                        }
+                    }
+                }
+
                 // Nach dem Bibliotheks-Update: Prüfen ob ein manueller Eintrag existiert und die Spielzeit übertragen
                 var libraryLiveGame = PlayniteApi.Database.Games.FirstOrDefault(g => g.PluginId == Id && g.GameId.Equals("RSI_SC_LIVE", StringComparison.OrdinalIgnoreCase));
                 var manualGame = PlayniteApi.Database.Games.FirstOrDefault(g =>
@@ -205,12 +241,12 @@ namespace StarCitizenLibrary
                     if (!string.IsNullOrWhiteSpace(manualGame.Notes)) libraryLiveGame.Notes = manualGame.Notes;
 
                     PlayniteApi.Database.Games.Update(libraryLiveGame);
-                    logger.Info($"Successfully migrated {manualGame.Playtime} seconds of playtime from manual entry to library entry.");
+                    logger.Info(string.Format("Successfully migrated {0} seconds of playtime from manual entry to library entry.", manualGame.Playtime));
                 }
             }
             catch (Exception ex)
             {
-                logger.Warn(ex, "Failed to migrate playtime from manual Star Citizen entry.");
+                logger.Warn(ex, "Failed to update Star Citizen library metadata or migrate playtime.");
             }
         }
 
