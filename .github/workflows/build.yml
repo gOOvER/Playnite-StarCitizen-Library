@@ -42,11 +42,9 @@ jobs:
 
         # Read addon ID and version from extension.yaml
         $yamlContent = Get-Content (Join-Path $outDir "extension.yaml") -Raw
-        $addonId = if ($yamlContent -match '(?m)^Id:\s*([^\r\n]+)') { $Matches[1].Trim() } else { "StarCitizenLibrary_d2146b15-4cfc-40cc-93dd-1297e2e0aa49" }
         $version = if ($yamlContent -match '(?m)^Version:\s*([^\r\n]+)') { $Matches[1].Trim() } else { "0.1.0" }
-        $versionTag = $version -replace '\.', '_'
 
-        $pextName = "${addonId}_${versionTag}.pext"
+        $pextName = "StarCitizenLibrary_v${version}.pext"
         $pextPath = Join-Path "bin" $pextName
 
         Write-Host "Creating extension package: $pextName"
