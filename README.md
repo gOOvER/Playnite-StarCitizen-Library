@@ -1,6 +1,12 @@
 # Roberts Space Industries / Star Citizen Library Plugin for Playnite
 
-A native Playnite library plugin that automatically detects, imports, and launches Star Citizen channels (**LIVE**, **PTU**, **EPTU**, **TECH-PREVIEW**) without any manual executable or path configuration.
+[![Website](https://img.shields.io/badge/playnite.goover.dev-Showcase%20%26%20Downloads-ea8024?style=flat-square&logo=googlechrome&logoColor=white)](https://playnite.goover.dev)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=flat-square)](LICENSE)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-F16061?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/goover)
+
+A native Playnite library plugin that automatically detects, imports, and launches Star Citizen channels (**LIVE**, **PTU**, **EPTU**, **HOTFIX**, **TECH-PREVIEW**) without any manual executable or path configuration.
+
+🌐 **Official Showcase & Direct Downloads**: [https://playnite.goover.dev/](https://playnite.goover.dev/)
 
 ---
 
