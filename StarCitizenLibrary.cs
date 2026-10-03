@@ -62,7 +62,7 @@ namespace StarCitizenLibrary
 
                 yield return new AutomaticPlayController(args.Game)
                 {
-                    Name = "Normal starten",
+                    Name = ResourceProvider.GetString("LOCStarCitizenActionPlay"),
                     Path = launcherPath,
                     WorkingDir = gameRoot,
                     TrackingMode = TrackingMode.Directory,
@@ -78,6 +78,14 @@ namespace StarCitizenLibrary
             var games = new List<GameMetadata>();
             var pluginFolder = GetPluginFolder();
 
+            var customPath = settings.Settings.CustomInstallPath;
+            var scanPathText = !string.IsNullOrWhiteSpace(customPath) ? customPath : ResourceProvider.GetString("LOCStarCitizenAutoScan");
+            PlayniteApi.Notifications.Add(new NotificationMessage(
+                "RSI_SEARCH_STATUS",
+                string.Format(ResourceProvider.GetString("LOCStarCitizenNotifySearching"), scanPathText),
+                NotificationType.Info
+            ));
+
             var installations = StarCitizenDetector.DetectInstallations(
                 settings.Settings.CustomInstallPath,
                 settings.Settings.ImportPtu,
@@ -85,11 +93,31 @@ namespace StarCitizenLibrary
                 settings.Settings.ImportTechPreview
             );
 
+            if (installations.Any())
+            {
+                var channels = string.Join(", ", installations.Select(i => i.Channel));
+                PlayniteApi.Notifications.Add(new NotificationMessage(
+                    "RSI_SEARCH_FOUND",
+                    string.Format(ResourceProvider.GetString("LOCStarCitizenNotifyFound"), installations.Count(), channels),
+                    NotificationType.Info
+                ));
+            }
+            else
+            {
+                PlayniteApi.Notifications.Add(new NotificationMessage(
+                    "RSI_SEARCH_NONE",
+                    ResourceProvider.GetString("LOCStarCitizenNotifyNotFound"),
+                    NotificationType.Error
+                ));
+            }
+
             // Prüfen, ob bereits ein manueller Star Citizen Eintrag mit Spielzeit/Notizen in Playnite existiert
             var manualGame = PlayniteApi.Database.Games.FirstOrDefault(g =>
                 g.PluginId == Guid.Empty &&
                 !string.IsNullOrEmpty(g.Name) &&
                 g.Name.IndexOf("Star Citizen", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            var unknownStr = ResourceProvider.GetString("LOCStarCitizenUnknown");
 
             foreach (var install in installations)
             {
@@ -120,49 +148,35 @@ namespace StarCitizenLibrary
                     {
                         tags.Add(new MetadataNameProperty("RSI Account: " + install.Pilot.AccountId));
                     }
-                    pilotLine = "<tr><td><b>Pilot:</b></td><td>" + install.Pilot.Name + " (ID: " + (install.Pilot.AccountId ?? "Unbekannt") + ")</td></tr>";
+                    pilotLine = "<tr><td><b>" + ResourceProvider.GetString("LOCStarCitizenPilotLabel") + "</b></td><td>" + install.Pilot.Name + " (ID: " + (install.Pilot.AccountId ?? unknownStr) + ")</td></tr>";
                 }
 
                 string shardLine = "";
                 if (install.Pilot != null && !string.IsNullOrEmpty(install.Pilot.LastShard))
                 {
-                    shardLine = "<tr><td><b>Letzte Shard:</b></td><td>" + install.Pilot.LastShard + "</td></tr>";
+                    shardLine = "<tr><td><b>" + ResourceProvider.GetString("LOCStarCitizenLastShardLabel") + "</b></td><td>" + install.Pilot.LastShard + "</td></tr>";
                 }
 
-                var sizeGbStr = install.InstallSize.HasValue ? string.Format("{0:F2} GB", install.InstallSize.Value / (1024.0 * 1024.0 * 1024.0)) : "Unbekannt";
+                var sizeGbStr = install.InstallSize.HasValue ? string.Format("{0:F2} GB", install.InstallSize.Value / (1024.0 * 1024.0 * 1024.0)) : unknownStr;
 
-                var descriptionHtml = "<p><b>Star Citizen</b> ist eine Weltraum-Handels- und Kampfflugsimulation von Cloud Imperium Games.</p>" +
+                var descriptionHtml = ResourceProvider.GetString("LOCStarCitizenGameDescription") +
                     "<table style='border-collapse: collapse; margin-top: 8px; font-size: 13px;'>" +
                     pilotLine +
-                    "<tr><td><b>Version:</b></td><td>" + (install.Version ?? "Alpha") + " (" + (install.RawVersion ?? "") + ")</td></tr>" +
-                    "<tr><td><b>Kanal:</b></td><td>" + install.Channel + "</td></tr>" +
-                    "<tr><td><b>SSD-Größe:</b></td><td>" + sizeGbStr + "</td></tr>" +
+                    "<tr><td><b>" + ResourceProvider.GetString("LOCStarCitizenVersionLabel") + "</b></td><td>" + (install.Version ?? "Alpha") + " (" + (install.RawVersion ?? "") + ")</td></tr>" +
+                    "<tr><td><b>" + ResourceProvider.GetString("LOCStarCitizenChannelLabel") + "</b></td><td>" + install.Channel + "</td></tr>" +
+                    "<tr><td><b>" + ResourceProvider.GetString("LOCStarCitizenInstallSizeLabel") + "</b></td><td>" + sizeGbStr + "</td></tr>" +
                     shardLine +
-                    "<tr><td><b>Pfad:</b></td><td>" + install.InstallDirectory + "</td></tr>" +
+                    "<tr><td><b>" + ResourceProvider.GetString("LOCStarCitizenPathLabel") + "</b></td><td>" + install.InstallDirectory + "</td></tr>" +
                     "</table>";
 
-                var actions = new List<GameAction>
-                {
-                    new GameAction
-                    {
-                        Name = "Normal starten",
-                        Type = GameActionType.File,
-                        Path = launcherPath,
-                        WorkingDir = gameRoot,
-                        TrackingMode = TrackingMode.Directory,
-                        TrackingPath = bin64Dir,
-                        InitialTrackingDelay = 0,
-                        TrackingFrequency = 2000,
-                        IsPlayAction = true
-                    }
-                };
+                var actions = new List<GameAction>();
 
                 // Schnellzugriff-Aktionen für Ordner und Dateien
                 if (Directory.Exists(screenshotsDir))
                 {
                     actions.Add(new GameAction
                     {
-                        Name = "📸 Screenshots-Ordner öffnen",
+                        Name = ResourceProvider.GetString("LOCStarCitizenActionScreenshots"),
                         Type = GameActionType.File,
                         Path = "explorer.exe",
                         Arguments = string.Format("{0}", screenshotsDir),
@@ -174,7 +188,7 @@ namespace StarCitizenLibrary
                 {
                     actions.Add(new GameAction
                     {
-                        Name = "📂 Log-Backups öffnen",
+                        Name = ResourceProvider.GetString("LOCStarCitizenActionLogBackups"),
                         Type = GameActionType.File,
                         Path = "explorer.exe",
                         Arguments = string.Format("{0}", logbackupsDir),
@@ -186,7 +200,7 @@ namespace StarCitizenLibrary
                 {
                     actions.Add(new GameAction
                     {
-                        Name = "📜 Game.log ansehen",
+                        Name = ResourceProvider.GetString("LOCStarCitizenActionGameLog"),
                         Type = GameActionType.File,
                         Path = "notepad.exe",
                         Arguments = string.Format("{0}", gameLogFile),
@@ -194,10 +208,9 @@ namespace StarCitizenLibrary
                     });
                 }
 
-
-
                 var game = new GameMetadata
                 {
+                    Source = new MetadataNameProperty("RSI"),
                     GameId = gameId,
                     Name = install.ChannelName,
                     InstallDirectory = install.InstallDirectory,
@@ -281,6 +294,9 @@ namespace StarCitizenLibrary
                     settings.Settings.ImportTechPreview
                 );
 
+                var rsiSource = PlayniteApi.Database.Sources.FirstOrDefault(s => s.Name.Equals("RSI", StringComparison.OrdinalIgnoreCase))
+                    ?? PlayniteApi.Database.Sources.Add("RSI");
+
                 // Vorhandene Star Citizen Spiele in der Playnite-Datenbank mit neuester Version & SSD-Größe synchronisieren
                 foreach (var install in installations)
                 {
@@ -289,6 +305,22 @@ namespace StarCitizenLibrary
                     if (dbGame != null)
                     {
                         bool modified = false;
+
+                        // Sicherstellen, dass Quelle auf RSI gesetzt ist (für Penumbra / DuplicateHider)
+                        if (rsiSource != null && dbGame.SourceId != rsiSource.Id)
+                        {
+                            dbGame.SourceId = rsiSource.Id;
+                            modified = true;
+                        }
+
+                        // Redundante Play-Actions / alte Tracking-Aktionen aus GameActions bereinigen
+                        if (dbGame.GameActions != null && dbGame.GameActions.Any(a => a.IsPlayAction || a.Name == "Tracking" || a.Name == "SCTracking" || a.Name == "Normal starten"))
+                        {
+                            var cleaned = dbGame.GameActions.Where(a => !a.IsPlayAction && a.Name != "Tracking" && a.Name != "SCTracking" && a.Name != "Normal starten").ToList();
+                            dbGame.GameActions = new System.Collections.ObjectModel.ObservableCollection<GameAction>(cleaned);
+                            modified = true;
+                        }
+
                         if (install.InstallSize.HasValue && dbGame.InstallSize != install.InstallSize.Value)
                         {
                             dbGame.InstallSize = install.InstallSize.Value;
@@ -303,7 +335,7 @@ namespace StarCitizenLibrary
                         if (modified)
                         {
                             PlayniteApi.Database.Games.Update(dbGame);
-                            logger.Info(string.Format("Updated {0}: Version={1}, InstallSize={2}", dbGame.Name, dbGame.Version, dbGame.InstallSize));
+                            logger.Info(string.Format("Updated {0}: Source=RSI, Version={1}, InstallSize={2}", dbGame.Name, dbGame.Version, dbGame.InstallSize));
                         }
                     }
                 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Settings View -->
+    <sys:String x:Key="LOCStarCitizenSettingsTitle">Roberts Space Industries / Star Citizen Bibliothek</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsInstallDirLabel">Installationsverzeichnis (optional):</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsInstallDirHint">Standardmäßig werden alle lokalen Laufwerke automatisch nach Star Citizen durchsucht.</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsBrowseButton">Durchsuchen...</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsLaunchBehaviorLabel">Start-Verhalten:</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsLaunchBehaviorHint">Das Spiel wird immer über den offiziellen RSI Launcher gestartet (erforderlich für EAC- &amp; Auth-Token) und der Prozess im Ordner Bin64 überwacht.</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportChannelsLabel">Channels importieren:</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportPtu">PTU (Public Test Universe) importieren</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportEptu">EPTU (Experimental PTU) importieren</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportTechPreview">Tech-Preview importieren</sys:String>
+
+    <!-- Play & Game Actions -->
+    <sys:String x:Key="LOCStarCitizenActionPlay">Star Citizen starten</sys:String>
+    <sys:String x:Key="LOCStarCitizenActionScreenshots">📸 Screenshots-Ordner öffnen</sys:String>
+    <sys:String x:Key="LOCStarCitizenActionLogBackups">📂 Log-Backups öffnen</sys:String>
+    <sys:String x:Key="LOCStarCitizenActionGameLog">📜 Game.log ansehen</sys:String>
+
+    <!-- Notifications -->
+    <sys:String x:Key="LOCStarCitizenNotifySearching">RSI: Suche nach Star Citizen Installationen (Pfad: {0})...</sys:String>
+    <sys:String x:Key="LOCStarCitizenNotifyFound">RSI: {0} Star Citizen Installation(en) gefunden ({1}).</sys:String>
+    <sys:String x:Key="LOCStarCitizenNotifyNotFound">RSI: Keine Star Citizen Installationen gefunden. Bitte Pfad in den Einstellungen prüfen.</sys:String>
+    <sys:String x:Key="LOCStarCitizenAutoScan">Automatische Laufwerkserkennung</sys:String>
+
+    <!-- Game Metadata / Description -->
+    <sys:String x:Key="LOCStarCitizenGameDescription">&lt;p&gt;&lt;b&gt;Star Citizen&lt;/b&gt; ist eine Weltraum-Handels- und Kampfflugsimulation von Cloud Imperium Games.&lt;/p&gt;</sys:String>
+    <sys:String x:Key="LOCStarCitizenVersionLabel">Version:</sys:String>
+    <sys:String x:Key="LOCStarCitizenChannelLabel">Kanal:</sys:String>
+    <sys:String x:Key="LOCStarCitizenInstallSizeLabel">SSD-Größe:</sys:String>
+    <sys:String x:Key="LOCStarCitizenLastShardLabel">Letzte Shard:</sys:String>
+    <sys:String x:Key="LOCStarCitizenPathLabel">Pfad:</sys:String>
+    <sys:String x:Key="LOCStarCitizenPilotLabel">Pilot:</sys:String>
+    <sys:String x:Key="LOCStarCitizenUnknown">Unbekannt</sys:String>
+
+</ResourceDictionary>

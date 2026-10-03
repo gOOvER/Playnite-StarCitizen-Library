@@ -6,23 +6,23 @@
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600">
     <StackPanel Margin="20">
-        <TextBlock Text="Roberts Space Industries / Star Citizen Library" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Text="{DynamicResource LOCStarCitizenSettingsTitle}" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
         
-        <TextBlock Text="Installationsverzeichnis (optional):" FontWeight="SemiBold" Margin="0,5,0,2"/>
-        <TextBlock Text="Standardmäßig werden alle lokalen Laufwerke automatisch nach Star Citizen durchsucht." 
+        <TextBlock Text="{DynamicResource LOCStarCitizenSettingsInstallDirLabel}" FontWeight="SemiBold" Margin="0,5,0,2"/>
+        <TextBlock Text="{DynamicResource LOCStarCitizenSettingsInstallDirHint}" 
                    Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,5"/>
         <DockPanel LastChildFill="True" Margin="0,0,0,15">
-            <Button Content="Durchsuchen..." DockPanel.Dock="Right" Margin="8,0,0,0" Padding="12,4" Click="BrowseFolder_Click"/>
+            <Button Content="{DynamicResource LOCStarCitizenSettingsBrowseButton}" DockPanel.Dock="Right" Margin="8,0,0,0" Padding="12,4" Click="BrowseFolder_Click"/>
             <TextBox Text="{Binding Settings.CustomInstallPath, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Padding="4,2"/>
         </DockPanel>
 
-        <TextBlock Text="Start-Verhalten:" FontWeight="SemiBold" Margin="0,5,0,2"/>
-        <TextBlock Text="Das Spiel wird immer über den offiziellen RSI Launcher gestartet (erforderlich für EAC- &amp; Auth-Token) und der Prozess im Ordner Bin64 überwacht." 
+        <TextBlock Text="{DynamicResource LOCStarCitizenSettingsLaunchBehaviorLabel}" FontWeight="SemiBold" Margin="0,5,0,2"/>
+        <TextBlock Text="{DynamicResource LOCStarCitizenSettingsLaunchBehaviorHint}" 
                    Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
-        <TextBlock Text="Channels importieren:" FontWeight="SemiBold" Margin="0,5,0,5"/>
-        <CheckBox Content="PTU (Public Test Universe) importieren" IsChecked="{Binding Settings.ImportPtu}" Margin="0,0,0,5"/>
-        <CheckBox Content="EPTU (Experimental PTU) importieren" IsChecked="{Binding Settings.ImportEptu}" Margin="0,0,0,5"/>
-        <CheckBox Content="Tech-Preview importieren" IsChecked="{Binding Settings.ImportTechPreview}" Margin="0,0,0,5"/>
+        <TextBlock Text="{DynamicResource LOCStarCitizenSettingsImportChannelsLabel}" FontWeight="SemiBold" Margin="0,5,0,5"/>
+        <CheckBox Content="{DynamicResource LOCStarCitizenSettingsImportPtu}" IsChecked="{Binding Settings.ImportPtu}" Margin="0,0,0,5"/>
+        <CheckBox Content="{DynamicResource LOCStarCitizenSettingsImportEptu}" IsChecked="{Binding Settings.ImportEptu}" Margin="0,0,0,5"/>
+        <CheckBox Content="{DynamicResource LOCStarCitizenSettingsImportTechPreview}" IsChecked="{Binding Settings.ImportTechPreview}" Margin="0,0,0,5"/>
     </StackPanel>
 </UserControl>

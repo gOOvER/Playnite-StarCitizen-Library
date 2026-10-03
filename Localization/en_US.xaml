@@ -1,7 +1,40 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-    
-    <sys:String x:Key="LOCCategoryAddCatButton">Add Category</sys:String>
-                    
+
+    <!-- Settings View -->
+    <sys:String x:Key="LOCStarCitizenSettingsTitle">Roberts Space Industries / Star Citizen Library</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsInstallDirLabel">Installation directory (optional):</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsInstallDirHint">By default, all local drives are automatically scanned for Star Citizen installations.</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsBrowseButton">Browse...</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsLaunchBehaviorLabel">Launch behavior:</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsLaunchBehaviorHint">The game is always launched via the official RSI Launcher (required for EAC &amp; auth token) and tracked via the Bin64 directory.</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportChannelsLabel">Import channels:</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportPtu">Import PTU (Public Test Universe)</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportEptu">Import EPTU (Experimental PTU)</sys:String>
+    <sys:String x:Key="LOCStarCitizenSettingsImportTechPreview">Import Tech-Preview</sys:String>
+
+    <!-- Play & Game Actions -->
+    <sys:String x:Key="LOCStarCitizenActionPlay">Play Star Citizen</sys:String>
+    <sys:String x:Key="LOCStarCitizenActionScreenshots">📸 Open Screenshots folder</sys:String>
+    <sys:String x:Key="LOCStarCitizenActionLogBackups">📂 Open Log Backups</sys:String>
+    <sys:String x:Key="LOCStarCitizenActionGameLog">📜 View Game.log</sys:String>
+
+    <!-- Notifications -->
+    <sys:String x:Key="LOCStarCitizenNotifySearching">RSI: Searching for Star Citizen installations (Path: {0})...</sys:String>
+    <sys:String x:Key="LOCStarCitizenNotifyFound">RSI: {0} Star Citizen installation(s) found ({1}).</sys:String>
+    <sys:String x:Key="LOCStarCitizenNotifyNotFound">RSI: No Star Citizen installations found. Please check path in settings.</sys:String>
+    <sys:String x:Key="LOCStarCitizenAutoScan">Automatic drive detection</sys:String>
+
+    <!-- Game Metadata / Description -->
+    <sys:String x:Key="LOCStarCitizenGameDescription">&lt;p&gt;&lt;b&gt;Star Citizen&lt;/b&gt; is an in-development multiplayer space trading and combat simulation game developed and published by Cloud Imperium Games.&lt;/p&gt;</sys:String>
+    <sys:String x:Key="LOCStarCitizenVersionLabel">Version:</sys:String>
+    <sys:String x:Key="LOCStarCitizenChannelLabel">Channel:</sys:String>
+    <sys:String x:Key="LOCStarCitizenInstallSizeLabel">SSD Size:</sys:String>
+    <sys:String x:Key="LOCStarCitizenLastShardLabel">Last Shard:</sys:String>
+    <sys:String x:Key="LOCStarCitizenPathLabel">Path:</sys:String>
+    <sys:String x:Key="LOCStarCitizenPilotLabel">Pilot:</sys:String>
+    <sys:String x:Key="LOCStarCitizenUnknown">Unknown</sys:String>
+
 </ResourceDictionary>
