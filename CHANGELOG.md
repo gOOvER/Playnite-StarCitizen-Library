@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Safe metadata inheritance: persists playtime, categories, and custom tags across library updates.
 - **UI, Localization & Theme Integration**:
   - Full bilingual support with English (`en_US.xaml`) default and German (`de_DE.xaml`) translations.
-  - Explicit `RSI` source badge assignment for seamless integration with modern desktop themes (Penumbra, DuplicateHider).
+  - Explicit `RSI` source badge assignment for seamless integration with modern desktop themes (Penumbra) and plugins (DuplicateHider).
   - Playnite notification center feedback during library scan start, discovery, and completion.
 - **Utilities & Context Menu**:
   - Quick shortcuts to Game Install directory, `USER` folder, and active log files.
