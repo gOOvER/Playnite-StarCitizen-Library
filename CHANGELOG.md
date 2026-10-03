@@ -27,9 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full bilingual support with English (`en_US.xaml`) default and German (`de_DE.xaml`) translations.
   - Explicit `RSI` source badge assignment for seamless integration with modern desktop themes (Penumbra) and plugins (DuplicateHider).
   - Playnite notification center feedback during library scan start, discovery, and completion.
-- **Utilities & Context Menu**:
-  - Quick shortcuts to Game Install directory, `USER` folder, and active log files.
-  - In-game `r_displayinfo` overlay switcher (Levels 0–3) via `user.cfg`.
 - **CI/CD & Packaging**:
   - GitHub Actions automated build and `.pext` package verification (`build.yml`).
   - Automated release pipeline with SHA-256 checksums and release note generation (`release.yml`).

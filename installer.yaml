@@ -6,11 +6,12 @@ Packages:
     PackageUrl: https://github.com/gOOvER/Playnite-StarCitizen-Library/releases/download/v0.1.0/StarCitizenLibrary_v0.1.0.pext
     Changelog:
       - Initial release of Roberts Space Industries (Star Citizen) Library plugin
-      - Zero-configuration detection across all local drives (LIVE, PTU, EPTU, TECH-PREVIEW)
+      - Zero-configuration detection across all local drives (LIVE, PTU, EPTU, HOTFIX, TECH-PREVIEW)
       - AutomaticPlayController launches via RSI Launcher with process directory monitoring
       - Single clean play action to avoid duplicate launch selection popups
       - Pilot identity, callsign, and shard detection
       - Safe playtime and metadata inheritance
       - Full German and English localization
       - Explicit RSI source integration for modern Playnite desktop themes
-      - Context menu shortcuts and r_displayinfo switcher
+      - Scan notifications: user feedback in Playnite top panel during library updates
+
