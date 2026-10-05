@@ -80,11 +80,7 @@ namespace StarCitizenLibrary
 
             var customPath = settings.Settings.CustomInstallPath;
             var scanPathText = !string.IsNullOrWhiteSpace(customPath) ? customPath : ResourceProvider.GetString("LOCStarCitizenAutoScan");
-            PlayniteApi.Notifications.Add(new NotificationMessage(
-                "RSI_SEARCH_STATUS",
-                string.Format(ResourceProvider.GetString("LOCStarCitizenNotifySearching"), scanPathText),
-                NotificationType.Info
-            ));
+            logger.Info($"Searching for Star Citizen installations at {scanPathText}...");
 
             var installations = StarCitizenDetector.DetectInstallations(
                 settings.Settings.CustomInstallPath,
@@ -96,11 +92,7 @@ namespace StarCitizenLibrary
             if (installations.Any())
             {
                 var channels = string.Join(", ", installations.Select(i => i.Channel));
-                PlayniteApi.Notifications.Add(new NotificationMessage(
-                    "RSI_SEARCH_FOUND",
-                    string.Format(ResourceProvider.GetString("LOCStarCitizenNotifyFound"), installations.Count(), channels),
-                    NotificationType.Info
-                ));
+                logger.Info($"RSI: {installations.Count()} Star Citizen installation(s) found ({channels}).");
             }
             else
             {
