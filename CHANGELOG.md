@@ -5,7 +5,13 @@ All notable changes to the Roberts Space Industries (Star Citizen) Library plugi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-10-06
+
+### Changed
+- Production release 1.0.0 milestone.
+- Updated PlayniteSDK dependency to 6.18.0.
+- Stabilized multi-channel detection and automated launcher process monitoring.
+- Synchronized package release with playnite.goover.dev ecosystem.
 
 ---
 
